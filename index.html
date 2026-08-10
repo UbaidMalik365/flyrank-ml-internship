@@ -1,1 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+    <title>Content Refresh Opportunity Scoring</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.7;
+            max-width: 1000px;
+            margin: auto;
+            padding: 40px 20px;
+            color: #222;
+            background: #f7f9fb;
+        }
+
+        header, section {
+            background: white;
+            padding: 30px;
+            margin-bottom: 25px;
+            border-radius: 12px;
+        }
+
+        h1 {
+            font-size: 38px;
+            margin-bottom: 10px;
+        }
+
+        h2 {
+            border-bottom: 2px solid #eee;
+            padding-bottom: 8px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 18px;
+        }
+
+        .metric-container {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .metric {
+            flex: 1;
+            min-width: 200px;
+            background: #f1f5f7;
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        .metric strong {
+            display: block;
+            font-size: 30px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th, td {
+            padding: 12px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+
+        th {
+            background: #f1f3f5;
+        }
+
+        .note {
+            background: #f5f5f5;
+            padding: 15px;
+            border-left: 4px solid #555;
+        }
+
+        footer {
+            text-align: center;
+            color: #666;
+            padding: 30px;
+        }
+
+        a {
+            color: #2563eb;
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+
+    <h1>Content Refresh Opportunity Scoring</h1>
+
+    <p class="subtitle">
+        A decision-support analysis for identifying content pages that may
+        warrant refresh or review.
+    </p>
+
+    <h2>Abstract</h2>
+
+    <p>
+        This project asks whether observable search and content signals can
+        be used to rank pages that may warrant content-refresh review.
+        I built a baseline rule and then trained a Decision Tree using
+        observable content and search-performance features from the FlyRank
+        internship dataset. On the Week-5 test split, the Decision Tree
+        achieved a measured Precision@50 of 0.62 compared with 0.46 for the
+        Week-4 baseline. An additional grouped-by-client validation produced
+        Precision@50 of 0.58, compared with 0.70 under the Week-5 random split,
+        showing that validation design materially affects the measured result.
+        The output is therefore best treated as directional decision-support
+        for human review rather than as proof of causal ranking or traffic
+        improvement.
+    </p>
+
+</header>
+
+
+<section>
+
+    <h2>1. Introduction / Problem Statement</h2>
+
+    <p>
+        Content teams need practical ways to decide which pages deserve
+        attention first. A simple rule can provide a useful starting point,
+        but it may miss interactions between multiple signals.
+    </p>
+
+    <p>
+        The research question for this project is:
+    </p>
+
+    <div class="note">
+        Can observable content and search-performance signals improve the
+        ranking of pages for potential content-refresh review compared with
+        a simple baseline rule?
+    </div>
+
+    <p>
+        The intended decision is prioritization: which pages should a human
+        reviewer examine first.
+    </p>
+
+</section>
+
+
+<section>
+
+    <h2>2. Data</h2>
+
+    <p>
+        The analysis used the FlyRank ML Internship dataset. The working
+        dataset contained 30,000 rows and 44 columns.
+    </p>
+
+    <p>
+        The available fields included content characteristics, search
+        performance, engagement signals, content age, freshness information,
+        click-through rate, average position, and trend information.
+    </p>
+
+    <p>
+        The analysis focused on observable features available for the
+        modeling task. Client names, domains, private queries, and other
+        identifying information were not included in the public-facing
+        analysis.
+    </p>
+
+</section>
+
+
+<section>
+
+    <h2>3. Methodology</h2>
+
+    <h3>Baseline</h3>
+
+    <p>
+        The Week-4 baseline used a simple rule-based ranking approach.
+        Its measured Precision@50 on the Week-5 comparison was 0.46.
+    </p>
+
+    <h3>Model</h3>
+
+    <p>
+        A Decision Tree was selected because it can represent non-linear
+        relationships between observable signals while remaining relatively
+        easy to inspect.
+    </p>
+
+    <p>
+        Features included observable content and search-performance signals
+        such as content age, days since last update, impressions, average
+        position, CTR, and word count.
+    </p>
+
+    <h3>Validation</h3>
+
+    <p>
+        The Week-5 model was initially evaluated using a random train/test
+        split. This produced 24,000 training rows and 6,000 testing rows.
+        The training and testing declining rates were both approximately
+        0.542.
+    </p>
+
+    <p>
+        A later audit used a grouped-by-client split. This produced 25
+        training clients and 7 testing clients, with zero shared clients
+        between the two groups.
+    </p>
+
+</section>
+
+
+<section>
+
+    <h2>4. Results</h2>
+
+    <div class="metric-container">
+
+        <div class="metric">
+            <strong>0.46</strong>
+            Week-4 Baseline Precision@50
+        </div>
+
+        <div class="metric">
+            <strong>0.62</strong>
+            Decision Tree Precision@50
+        </div>
+
+        <div class="metric">
+            <strong>0.58</strong>
+            Grouped-by-client Precision@50
+        </div>
+
+    </div>
+
+    <h3>Model vs Baseline</h3>
+
+    <table>
+
+        <tr>
+            <th>Method</th>
+            <th>Validation</th>
+            <th>Precision@50</th>
+        </tr>
+
+        <tr>
+            <td>Week-4 Baseline</td>
+            <td>Week-5 test split</td>
+            <td>0.46</td>
+        </tr>
+
+        <tr>
+            <td>Decision Tree</td>
+            <td>Week-5 random split</td>
+            <td>0.70</td>
+        </tr>
+
+        <tr>
+            <td>Decision Tree</td>
+            <td>Week-6 grouped by client</td>
+            <td>0.58</td>
+        </tr>
+
+    </table>
+
+    <p>
+        The random split result was higher than the baseline, while the
+        grouped-by-client result was lower than the random-split result.
+        This difference indicates that the measured performance is sensitive
+        to the validation design.
+    </p>
+
+</section>
+
+
+<section>
+
+    <h2>5. Limitations & Honest Framing</h2>
+
+    <ul>
+        <li>
+            The model identifies pages that resemble observed declining
+            patterns; it does not prove that refreshing a page will improve
+            its performance.
+        </li>
+
+        <li>
+            Precision@50 measures ranking quality for the selected label,
+            not business impact.
+        </li>
+
+        <li>
+            The difference between random and grouped validation shows that
+            performance may not generalize equally across clients.
+        </li>
+
+        <li>
+            The analysis does not establish a causal relationship with search
+            engine rankings.
+        </li>
+
+        <li>
+            Human review remains necessary before taking content actions.
+        </li>
+    </ul>
+
+</section>
+
+
+<section>
+
+    <h2>6. Ranked Recommendations</h2>
+
+    <p>
+        The model output should be used as a review queue rather than an
+        automatic publishing system.
+    </p>
+
+    <table>
+
+        <tr>
+            <th>Priority</th>
+            <th>Action</th>
+            <th>Reason</th>
+        </tr>
+
+        <tr>
+            <td>1</td>
+            <td>Review for refresh</td>
+            <td>
+                Multiple observable signals indicate that the page may
+                warrant attention.
+            </td>
+        </tr>
+
+        <tr>
+            <td>2</td>
+            <td>Inspect freshness</td>
+            <td>
+                Older content or longer time since update can support a
+                refresh review.
+            </td>
+        </tr>
+
+        <tr>
+            <td>3</td>
+            <td>Inspect search performance</td>
+            <td>
+                Review impressions, CTR and position together rather than
+                relying on one metric.
+            </td>
+        </tr>
+
+        <tr>
+            <td>4</td>
+            <td>Human review</td>
+            <td>
+                Confirm that the recommended action makes sense for the
+                actual content before changing it.
+            </td>
+        </tr>
+
+    </table>
+
+    <h3>What should NOT be automated</h3>
+
+    <p>
+        The system should not automatically rewrite, delete, merge, publish,
+        or make other irreversible content decisions. Those actions require
+        human review and additional context.
+    </p>
+
+</section>
+
+
+<section>
+
+    <h2>7. Reproducibility</h2>
+
+    <p>
+        The analysis notebooks are available in the project repository.
+        The main capstone notebook is:
+    </p>
+
+    <p>
+        <code>work/notebooks/capstone.ipynb</code>
+    </p>
+
+    <p>
+        The project also contains the Week-4 baseline, Week-5 modeling,
+        Week-6 validation audit, and Week-7 action playbook notebooks.
+    </p>
+
+</section>
+
+
+<section>
+
+    <h2>8. Acknowledgments & Data Credit</h2>
+
+    <p>
+        Built on the FlyRank ML Internship dataset.
+    </p>
+
+    <p>
+        Data source:
+        <a href="https://flyrank.ai" target="_blank">
+            FlyRank
+        </a>
+    </p>
+
+</section>
+
+
+<section>
+
+    <h2>9. Demo & Shareable Summary</h2>
+
+    <h3>5-Minute Demo Outline</h3>
+
+    <ol>
+        <li>Introduce the content-refresh prioritization question.</li>
+        <li>Explain the observable signals and baseline rule.</li>
+        <li>Show the model-vs-baseline Precision@50 result.</li>
+        <li>Show why grouped validation matters.</li>
+        <li>Finish with the ranked human-review recommendations.</li>
+    </ol>
+
+    <h3>Social Post</h3>
+
+    <p>
+        I built a content-refresh opportunity scoring workflow using the
+        FlyRank ML Internship dataset. I compared a simple baseline with a
+        Decision Tree and then tested the model under grouped-by-client
+        validation to examine how robust the result was. The main lesson was
+        that validation design matters: the measured Precision@50 changed
+        from 0.70 on the random split to 0.58 on the grouped split.
+    </p>
+
+    <h3>Employer-Facing Summary</h3>
+
+    <p>
+        I built an ML-based decision-support workflow for prioritizing
+        content pages for human refresh review. Using 30,000 rows of FlyRank
+        search/content data, I compared a rule-based baseline with a
+        Decision Tree and evaluated both random and grouped validation.
+        The analysis showed improved ranking over the simple baseline while
+        also demonstrating why honest validation and careful claim framing
+        are important.
+    </p>
+
+</section>
+
+
+<footer>
+
+    <p>
+        FlyRank ML Internship Capstone
+    </p>
+
+    <p>
+        Observed results are presented as directional decision-support,
+        not causal claims.
+    </p>
+
+</footer>
+
+</body>
+</html>
